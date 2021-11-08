@@ -12,6 +12,9 @@ program nested
 
    use timerMod
    use mpi
+#ifdef USE_CPP_KOKKOS
+   use cpp_mod
+#endif
    implicit none
 
    integer, parameter :: &
@@ -28,7 +31,7 @@ program nested
    namelist /nested_nml/ nIters, nEdges, nCells, nVertLevels, nAdv
 
    integer :: &
-      i,j,k,n,iEdge,iCell, &! various loop iterators
+      i,k,n,iEdge,iCell, &! various loop iterators
       kmin, kmax            ! loop limits
 
    real (kind=RKIND), parameter :: &
@@ -76,7 +79,9 @@ program nested
       timerData,   &! timer for data transfers to device
       timerOrig,   &! timer for original CPU-optimized form
       timerGPU,    &! timer for a GPU-optimized form
-      timerGPU2     ! timer for a second GPU form
+      timer_cpp_impl1
+
+   logical :: first
 
    ! End preamble
    !-------------
@@ -222,6 +227,10 @@ program nested
    !--------------------------------------------------------------------
 
    timerData = timerCreate('Data transfer')
+#ifdef USE_CPP_KOKKOS
+   ! we won't skip this when done: just for dev
+   print *,'skip F90 code'
+#else
    call timerStart(timerData)
 
 #ifdef USE_OPENACC
@@ -435,6 +444,43 @@ program nested
    !$omp target update to(highOrderFlx)
 #endif
    call timerStop(timerData)
+#endif
+
+   !--------------------------------------------------------------------
+   ! C++/Kokkos form
+   !--------------------------------------------------------------------
+#ifdef USE_CPP_KOKKOS
+   call timerStart(timerData)
+   call cpp_impl1_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
+        nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
+        tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask, &
+        advCoefs, advCoefs3rd, coef3rdOrder)
+   call timerStop(timerData)
+
+   timer_cpp_impl1 = timerCreate('C++/Kokkos')
+   call timerStart(timer_cpp_impl1)
+   call cpp_impl1_run()
+   call timerStop(timer_cpp_impl1)
+   call timerPrint(timer_cpp_impl1)
+
+   call timerStart(timerData)
+   call cpp_impl1_get_results(nEdges, nVertLevels, highOrderFlx)
+   call timerStop(timerData)
+   first = .true.
+   do iEdge=1,nEdges
+   do k=1,nVertLevels
+      refVal = refFlx(k,iEdge)
+      relErr = abs(highOrderFlx(k,iEdge) - refVal)
+      if (refVal /= 0.0_RKIND) relErr = relErr/abs(refVal)
+      if (relErr > errTol .and. first) then
+         print *,'Error computing highOrderFlx, C++/Kokkos impl1: ', &
+                  k,iEdge,highOrderFlx(k,iEdge),refVal
+         first = .false.
+      endif
+      highOrderFlx(k,iEdge) = 0.0_RKIND
+   end do
+   end do
+#endif
 
    !--------------------------------------------------------------------
    ! Clean up and deallocate

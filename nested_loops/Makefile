@@ -50,9 +50,17 @@ ifort:
 
 gnu:
 	make nested \
-	"FC=gfortran" \
-	"FFLAGS=-O3 -m64" \
+	"FC=mpif90" \
+	"FFLAGS=-O3 -m64 -Wall -pedantic" \
 	"LDFLAGS=-O3 -m64"
+
+gnucpp:
+	make nestedcpp \
+	"FC=mpif90" \
+	"CXX=mpicxx" \
+	"FFLAGS=-O3 -m64 -Wall -pedantic -DUSE_CPP_KOKKOS" \
+	"CXXFLAGS=-std=c++14 -O3 -m64 -Wall -pedantic -DUSE_CPP_KOKKOS" \
+	"LDFLAGS=-O3 -m64 -lstdc++"
 
 llvm:
 	make nested \
@@ -64,7 +72,11 @@ nested: nested.o timerMod.o
 	@echo "Linking"
 	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o
 
-nested.o: nested.F90 timerMod.o
+nestedcpp: nested.o timerMod.o cpp_mod.o cpp_impl1.o
+	@echo "Linking"
+	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o cpp_mod.o cpp_impl1.o
+
+nested.o: nested.F90 timerMod.o cpp_mod.o
 	@echo "Building nested source"
 	$(FC) -c $(FFLAGS) nested.F90
 
@@ -72,6 +84,13 @@ timerMod.o: timerMod.f90
 	@echo "Building timer module"
 	$(FC) -c $(FFLAGS) timerMod.f90
 
+cpp_mod.o: cpp_mod.F90
+	@echo "Building cpp module"
+	$(FC) -c $(FFLAGS) cpp_mod.F90
+
+cpp_impl1.o: cpp_impl1.cpp
+	@echo "Building cpp impl1"
+	$(CXX) -c $(CXXFLAGS) cpp_impl1.cpp
+
 clean:
 	/bin/rm -f nested *.o *optrpt *.s *.mod *.MOD
-
