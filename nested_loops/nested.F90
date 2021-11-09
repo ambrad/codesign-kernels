@@ -12,8 +12,8 @@ program nested
 
    use timerMod
    use mpi
-#ifdef USE_CPP_KOKKOS
-   use cpp_mod
+#ifdef USE_CKE
+   use cke_mod
 #endif
    implicit none
 
@@ -79,7 +79,7 @@ program nested
       timerData,   &! timer for data transfers to device
       timerOrig,   &! timer for original CPU-optimized form
       timerGPU,    &! timer for a GPU-optimized form
-      timer_cpp_impl1
+      timer_cke1
 
    logical :: first
 
@@ -227,7 +227,7 @@ program nested
    !--------------------------------------------------------------------
 
    timerData = timerCreate('Data transfer')
-#ifdef USE_CPP_KOKKOS
+#ifdef USE_CKE
    ! we won't skip this when done: just for dev
    print *,'skip F90 code'
 #else
@@ -449,25 +449,25 @@ program nested
    !--------------------------------------------------------------------
    ! C++/Kokkos form
    !--------------------------------------------------------------------
-#ifdef USE_CPP_KOKKOS
+#ifdef USE_CKE
    call kokkos_init()
 
    call timerStart(timerData)
-   call cpp_impl_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
+   call cke_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
         nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
         tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask, &
         advCoefs, advCoefs3rd, coef3rdOrder)
    call timerStop(timerData)
 
-   timer_cpp_impl1 = timerCreate('C++/Kokkos')
-   call timerStart(timer_cpp_impl1)
-   call cpp_impl1_run()
-   call timerStop(timer_cpp_impl1)
-   call timerPrint(timer_cpp_impl1)
+   timer_cke1 = timerCreate('C++/Kokkos')
+   call timerStart(timer_cke1)
+   call cke1_run()
+   call timerStop(timer_cke1)
+   call timerPrint(timer_cke1)
 
    call timerStart(timerData)
-   call cpp_impl_get_results(nEdges, nVertLevels, highOrderFlx)
-   call cpp_impl_cleanup()
+   call cke_get_results(nEdges, nVertLevels, highOrderFlx)
+   call cke_cleanup()
    call timerStop(timerData)
    first = .true.
    do iEdge=1,nEdges

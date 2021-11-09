@@ -5,7 +5,7 @@
    structures, test administrative details, and the actual demo.
  */
 
-#include "cpp_impl.hpp"
+#include "cke.hpp"
 
 #include <memory>
 
@@ -35,7 +35,7 @@ void kokkos_finalize () {
 struct Data {
   typedef std::shared_ptr<Data> Ptr; // convenience: Data::Ptr
 
-  enum : int { packn = CPP_IMPL_PACK_SIZE }; // pack size
+  enum : int { packn = CKE_PACK_SIZE }; // pack size
   typedef ekat::Pack<Real,packn> Pr; // shorthand for a pack of reals
 
   typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
@@ -153,7 +153,7 @@ void Data::init (
 
 Data::Ptr g_data;
 
-void cpp_impl_init (
+void cke_init (
   const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
   const Int nAdv, const Int* nAdvCellsForEdge, const Int* minLevelCell,
   const Int* maxLevelCell, const Int* advCellsForEdge, const Real* tracerCur,
@@ -167,12 +167,12 @@ void cpp_impl_init (
                advCoefs, advCoefs3rd, coef3rdOrder);
 }
 
-void cpp_impl_get_results (const Int nEdges, const Int nVertLevels,
+void cke_get_results (const Int nEdges, const Int nVertLevels,
                            Real* highOrderFlx) {
   
 }
 
-void cpp_impl_cleanup () { g_data = nullptr; }
+void cke_cleanup () { g_data = nullptr; }
 
 //sec C++/Kokkos/EKAT demo implementation 1.
 
@@ -180,7 +180,7 @@ void run_impl1 (const Data& d) {
   
 }
 
-void cpp_impl1_run () {
+void cke1_run () {
   assert(g_data);
   run_impl1(*g_data);
 }

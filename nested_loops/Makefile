@@ -4,13 +4,13 @@ LDFLAGS =
 
 # if using C++/Kokkos, set
 # * the EKAT installation root dir
-# * CPP_IMPL_PACK_SIZE
+# * CKE_PACK_SIZE
 EKAT = # no default
-CPP_IMPL_PACK_SIZE = 4
+CKE_PACK_SIZE = 4
 include make.inc
-CPP_IMPL_FLAGS = -DUSE_CPP_KOKKOS -DCPP_IMPL_PACK_SIZE=${CPP_IMPL_PACK_SIZE} \
+CKE_FLAGS = -DUSE_CKE -DCKE_PACK_SIZE=${CKE_PACK_SIZE} \
 	-I${EKAT}/include -I${EKAT}/include/kokkos
-CPP_IMPL_LIBS = -lstdc++ -lmpi_cxx -L${EKAT}/lib -lekat -lkokkoscore -ldl
+CKE_LIBS = -lstdc++ -lmpi_cxx -L${EKAT}/lib -lekat -lkokkoscore -ldl
 
 dummy:
 	@echo "ERROR: Unknown target"
@@ -64,13 +64,13 @@ gnu:
 	"FFLAGS=-O3 -m64 -Wall -pedantic" \
 	"LDFLAGS=-O3 -m64"
 
-gnucpp:
-	make nestedcpp \
+gnucke:
+	make nestedcke \
 	"FC=mpif90" \
 	"CXX=mpicxx" \
-	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CPP_KOKKOS" \
-	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic ${CPP_IMPL_FLAGS}" \
-	"LDFLAGS=-O3 -m64 -fopenmp ${CPP_IMPL_LIBS}"
+	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE" \
+	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic ${CKE_FLAGS}" \
+	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS}"
 
 llvm:
 	make nested \
@@ -82,11 +82,11 @@ nested: nested.o timerMod.o
 	@echo "Linking"
 	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o
 
-nestedcpp: nested.o timerMod.o cpp_mod.o cpp_impl.o
+nestedcke: nested.o timerMod.o cke_mod.o cke.o
 	@echo "Linking"
-	$(FC) -o nested nested.o timerMod.o cpp_mod.o cpp_impl.o $(LDFLAGS)
+	$(FC) -o nested nested.o timerMod.o cke_mod.o cke.o $(LDFLAGS)
 
-nested.o: nested.F90 timerMod.o cpp_mod.o
+nested.o: nested.F90 timerMod.o cke_mod.o
 	@echo "Building nested source"
 	$(FC) -c $(FFLAGS) nested.F90
 
@@ -94,13 +94,13 @@ timerMod.o: timerMod.f90
 	@echo "Building timer module"
 	$(FC) -c $(FFLAGS) timerMod.f90
 
-cpp_mod.o: cpp_mod.F90
-	@echo "Building cpp module"
-	$(FC) -c $(FFLAGS) cpp_mod.F90
+cke_mod.o: cke_mod.F90
+	@echo "Building cke module"
+	$(FC) -c $(FFLAGS) cke_mod.F90
 
-cpp_impl.o: cpp_impl.cpp
-	@echo "Building cpp impl"
-	$(CXX) -c $(CXXFLAGS) cpp_impl.cpp
+cke.o: cke.cpp
+	@echo "Building cke impl"
+	$(CXX) -c $(CXXFLAGS) cke.cpp
 
 clean:
 	/bin/rm -f nested *.o *optrpt *.s *.mod *.MOD
