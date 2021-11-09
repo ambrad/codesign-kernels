@@ -8,6 +8,9 @@ LDFLAGS =
 EKAT = # no default
 CPP_IMPL_PACK_SIZE = 4
 include make.inc
+CPP_IMPL_FLAGS = -DUSE_CPP_KOKKOS -DCPP_IMPL_PACK_SIZE=${CPP_IMPL_PACK_SIZE} \
+	-I${EKAT}/include -I${EKAT}/include/kokkos
+CPP_IMPL_LIBS = -lstdc++ -lmpi_cxx -L${EKAT}/lib -lekat -lkokkoscore -ldl
 
 dummy:
 	@echo "ERROR: Unknown target"
@@ -66,10 +69,8 @@ gnucpp:
 	"FC=mpif90" \
 	"CXX=mpicxx" \
 	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CPP_KOKKOS" \
-	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic \
-		-DUSE_CPP_KOKKOS -DCPP_IMPL_PACK_SIZE=${CPP_IMPL_PACK_SIZE} \
-		-I${EKAT}/include -I${EKAT}/include/kokkos" \
-	"LDFLAGS=-O3 -m64 -fopenmp -lstdc++ -lmpi_cxx -L${EKAT}/lib -lkokkoscore -ldl"
+	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic ${CPP_IMPL_FLAGS}" \
+	"LDFLAGS=-O3 -m64 -fopenmp ${CPP_IMPL_LIBS}"
 
 llvm:
 	make nested \

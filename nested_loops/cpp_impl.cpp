@@ -11,6 +11,7 @@
 
 #include "Kokkos_Core.hpp"
 
+#include "ekat/ekat_session.hpp"
 #include "ekat/ekat_pack.hpp"
 #include "ekat/ekat_pack_utils.hpp"
 #include "ekat/ekat_pack_kokkos.hpp"
@@ -20,29 +21,8 @@
 static bool in_charge_of_kokkos = false;
 
 void kokkos_init () {
-  if (Kokkos::is_initialized()) return;
-  in_charge_of_kokkos = true;
-  std::vector<char*> args;
-#ifdef KOKKOS_ENABLE_CUDA
-  // Round-robin assignment of ranks to GPUs.
-  int nd;
-  const auto ret = cudaGetDeviceCount(&nd);
-  if (ret != cudaSuccess) {
-    // It isn't a big deal if we can't get the device count.
-    nd = 1;
-  }
-  std::stringstream ss;
-  ss << "--kokkos-ndevices=" << nd;
-  const auto key = ss.str();
-  std::vector<char> str(key.size()+1);
-  std::copy(key.begin(), key.end(), str.begin());
-  str.back() = 0;
-  args.push_back(const_cast<char*>(str.data()));
-#endif
-  const char* silence = "--kokkos-disable-warnings";
-  args.push_back(const_cast<char*>(silence));
-  int narg = args.size();
-  Kokkos::initialize(narg, args.data());
+  in_charge_of_kokkos = ! Kokkos::is_initialized();
+  ekat::initialize_ekat_session();
 }
 
 void kokkos_finalize () {
@@ -199,6 +179,7 @@ void cpp_impl_cleanup () { g_data = nullptr; }
 void run_impl1 (const Data& d) {
   
 }
+
 void cpp_impl1_run () {
   assert(g_data);
   run_impl1(*g_data);
