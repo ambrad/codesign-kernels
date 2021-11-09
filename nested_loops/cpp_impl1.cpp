@@ -53,12 +53,14 @@ void kokkos_finalize () {
 //sec Data structures
 
 struct Data {
-  typedef std::shared_ptr<Data> Ptr;
+  typedef std::shared_ptr<Data> Ptr; // convenience: Data::Ptr
 
-  enum : int { packn = CPP_IMPL1_PACK_SIZE };
+  enum : int { packn = CPP_IMPL1_PACK_SIZE }; // pack size
+  typedef ekat::Pack<Real,packn> Pr; // shorthand for a pack of reals
 
-  typedef Kokkos::LayoutRight Layout;
+  typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
 
+  // Some handy view aliases.
   typedef Kokkos::View<Int*,Layout> Ai1;
   typedef Kokkos::View<const Int*,Layout> Aci1;
   typedef Kokkos::View<Int**,Layout> Ai2;
@@ -69,19 +71,20 @@ struct Data {
   typedef Kokkos::View<Real**,Layout> Ar2;
   typedef Kokkos::View<const Real**,Layout> Acr2;
 
-  typedef ekat::Pack<Real,packn> Pr;
-  typedef ekat::Pack<const Real,packn> Pcr;
-
   typedef Kokkos::View<Pr*,Layout> Apr1;
-  typedef Kokkos::View<Pcr*,Layout> Acpr1;
+  typedef Kokkos::View<const Pr*,Layout> Acpr1;
   typedef Kokkos::View<Pr**,Layout> Apr2;
-  typedef Kokkos::View<Pcr**,Layout> Acpr2;
+  typedef Kokkos::View<const Pr**,Layout> Acpr2;
 
+  // Read-only data from F90.
   Int nIters, nEdges, nCells, nVertLevels, nAdv;
   Real coef3rdOrder;
   Aci1 nAdvCellsForEdge, minLevelCell, maxLevelCell;
   Aci2 advCellsForEdge;
   Acpr2 tracerCur, cellMask, normalThicknessFlux, advMaskHighOrder, advCoefs, advCoefs3rd;
+
+  // Output.
+  Apr2 highOrderFlx;
 
   void init(
     const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
@@ -91,16 +94,50 @@ struct Data {
     const Real* advCoefs, const Real* advCoefs3rd, const Real coef3rdOrder);  
 };
 
-//sec Test administrative details
+//sec Administrative details
 
-Data::Ptr g_data;
+// Initialize a View<const Pack<Real,packn>**> from raw(1:d1,1:d2), where dim 2
+// has the fast index.
+template <typename Scalar, typename V> static
+void initvpk (const Scalar* raw, const int d1, const int d2, const int packn,
+              const std::string& name, V& v) {
+  // Get the number of packs that cover the scalar length.
+  const int d2pk = ekat::PackInfo<Data::packn>::num_packs(d2);
+  // Allocate the view as writeable.
+  const auto vnc = typename V::non_const_type(name, d1, d2pk);
+  // For convenience, take a scalar view of the original Pack<Scalar> view.
+  const auto svnc = scalarize(vnc);
+  // Copy the F90 data to a host mirror of the scalar view.
+  const auto h = Kokkos::create_mirror_view(svnc);
+  for (int i = 0; i < d1; ++i)
+    for (int j = 0; j < d2; ++j)
+      h(i,j) = raw[d2*i+j];
+  // Copy the data to device.
+  Kokkos::deep_copy(svnc, h);
+  // Set the possibly read-only view with this data.
+  v = vnc;
+}
+
+// Simpler forms of the above: scalar 1D and 2D views.
 
 template <typename Scalar, typename V> static
-void init1d (const Scalar* raw, const int d1, const std::string& name, V& v,
-             const Scalar delta = 0) {
+void initv (const Scalar* raw, const int d1, const std::string& name, V& v,
+            const Scalar delta = 0) {
   const auto vnc = typename V::non_const_type(name, d1);
   const auto h = Kokkos::create_mirror_view(vnc);
   for (int i = 0; i < d1; ++i) h(i) = raw[i] + delta;
+  Kokkos::deep_copy(vnc, h);
+  v = vnc;
+}
+
+template <typename Scalar, typename V> static
+void initv (const Scalar* raw, const int d1, const int d2, const std::string& name,
+            V& v, const Scalar delta = 0) {
+  const auto vnc = typename V::non_const_type(name, d1, d2);
+  const auto h = Kokkos::create_mirror_view(vnc);
+  for (int i = 0; i < d1; ++i)
+    for (int j = 0; j < d2; ++j)
+      h(i,j) = raw[d2*i+j] + delta;
   Kokkos::deep_copy(vnc, h);
   v = vnc;
 }
@@ -115,9 +152,26 @@ void Data::init (
   nIters = nIters_; nEdges = nEdges_; nCells = nCells_; nVertLevels = nVertLevels_;
   nAdv = nAdv_; coef3rdOrder = coef3rdOrder_;
 
-  const int npack = ekat::PackInfo<Data::packn>::num_packs(Data::packn);
-  init1d(nAdvCellsForEdge_, nEdges, "nAdvCellsForEdge", nAdvCellsForEdge);
+  initv(nAdvCellsForEdge_, nEdges, "nAdvCellsForEdge", nAdvCellsForEdge);
+  initv(minLevelCell_, nCells, "minLevelCell", minLevelCell, -1);
+  initv(maxLevelCell_, nCells, "maxLevelCell", maxLevelCell, -1);
+  initv(advCellsForEdge_, nEdges, nAdv, "advCellsForEdge", advCellsForEdge, -1);
+  initvpk(tracerCur_, nCells, nVertLevels, Data::packn, "tracerCur", tracerCur);
+  initvpk(cellMask_, nCells, nVertLevels, Data::packn, "cellMask", cellMask);
+  initvpk(normalThicknessFlux_, nEdges, nVertLevels, Data::packn,
+          "normalThicknessFlux", normalThicknessFlux);
+  initvpk(advMaskHighOrder_, nEdges, nVertLevels, Data::packn,
+          "advMaskHighOrder", advMaskHighOrder);
+  initv(advCoefs_, nEdges, nAdv, "advCoefs", advCoefs);
+  initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
+
+  const int npack = ekat::PackInfo<Data::packn>::num_packs(nVertLevels);
+  highOrderFlx = Apr2("highOrderFlx", nEdges, npack);
 }
+
+//sec API
+
+Data::Ptr g_data;
 
 void cpp_impl1_init (
   const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
