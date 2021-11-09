@@ -4,9 +4,9 @@ LDFLAGS =
 
 # if using C++/Kokkos, set
 # * the EKAT installation root dir
-# * CPP_IMPL1_PACK_SIZE
+# * CPP_IMPL_PACK_SIZE
 EKAT = # no default
-CPP_IMPL1_PACK_SIZE = 4
+CPP_IMPL_PACK_SIZE = 4
 include make.inc
 
 dummy:
@@ -67,7 +67,7 @@ gnucpp:
 	"CXX=mpicxx" \
 	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CPP_KOKKOS" \
 	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic \
-		-DUSE_CPP_KOKKOS -DCPP_IMPL1_PACK_SIZE=${CPP_IMPL1_PACK_SIZE} \
+		-DUSE_CPP_KOKKOS -DCPP_IMPL_PACK_SIZE=${CPP_IMPL_PACK_SIZE} \
 		-I${EKAT}/include -I${EKAT}/include/kokkos" \
 	"LDFLAGS=-O3 -m64 -fopenmp -lstdc++ -lmpi_cxx -L${EKAT}/lib -lkokkoscore -ldl"
 
@@ -81,9 +81,9 @@ nested: nested.o timerMod.o
 	@echo "Linking"
 	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o
 
-nestedcpp: nested.o timerMod.o cpp_mod.o cpp_impl1.o
+nestedcpp: nested.o timerMod.o cpp_mod.o cpp_impl.o
 	@echo "Linking"
-	$(FC) -o nested nested.o timerMod.o cpp_mod.o cpp_impl1.o $(LDFLAGS)
+	$(FC) -o nested nested.o timerMod.o cpp_mod.o cpp_impl.o $(LDFLAGS)
 
 nested.o: nested.F90 timerMod.o cpp_mod.o
 	@echo "Building nested source"
@@ -97,9 +97,9 @@ cpp_mod.o: cpp_mod.F90
 	@echo "Building cpp module"
 	$(FC) -c $(FFLAGS) cpp_mod.F90
 
-cpp_impl1.o: cpp_impl1.cpp
-	@echo "Building cpp impl1"
-	$(CXX) -c $(CXXFLAGS) cpp_impl1.cpp
+cpp_impl.o: cpp_impl.cpp
+	@echo "Building cpp impl"
+	$(CXX) -c $(CXXFLAGS) cpp_impl.cpp
 
 clean:
 	/bin/rm -f nested *.o *optrpt *.s *.mod *.MOD

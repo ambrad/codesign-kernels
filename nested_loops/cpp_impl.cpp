@@ -1,11 +1,11 @@
-/* This file implements one approach to using C++/Kokkos/EKAT to implemented the
-   nested loop kernel.
+/* This file implements one or more approaches to using C++/Kokkos/EKAT to
+   implemented the nested loop kernel.
 
    See comments beginning with "//sec" to see each section of code: data
    structures, test administrative details, and the actual demo.
  */
 
-#include "cpp_impl1.hpp"
+#include "cpp_impl.hpp"
 
 #include <memory>
 
@@ -55,7 +55,7 @@ void kokkos_finalize () {
 struct Data {
   typedef std::shared_ptr<Data> Ptr; // convenience: Data::Ptr
 
-  enum : int { packn = CPP_IMPL1_PACK_SIZE }; // pack size
+  enum : int { packn = CPP_IMPL_PACK_SIZE }; // pack size
   typedef ekat::Pack<Real,packn> Pr; // shorthand for a pack of reals
 
   typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
@@ -156,16 +156,16 @@ void Data::init (
   initv(minLevelCell_, nCells, "minLevelCell", minLevelCell, -1);
   initv(maxLevelCell_, nCells, "maxLevelCell", maxLevelCell, -1);
   initv(advCellsForEdge_, nEdges, nAdv, "advCellsForEdge", advCellsForEdge, -1);
-  initvpk(tracerCur_, nCells, nVertLevels, Data::packn, "tracerCur", tracerCur);
-  initvpk(cellMask_, nCells, nVertLevels, Data::packn, "cellMask", cellMask);
-  initvpk(normalThicknessFlux_, nEdges, nVertLevels, Data::packn,
+  initvpk(tracerCur_, nCells, nVertLevels, packn, "tracerCur", tracerCur);
+  initvpk(cellMask_, nCells, nVertLevels, packn, "cellMask", cellMask);
+  initvpk(normalThicknessFlux_, nEdges, nVertLevels, packn,
           "normalThicknessFlux", normalThicknessFlux);
-  initvpk(advMaskHighOrder_, nEdges, nVertLevels, Data::packn,
+  initvpk(advMaskHighOrder_, nEdges, nVertLevels, packn,
           "advMaskHighOrder", advMaskHighOrder);
   initv(advCoefs_, nEdges, nAdv, "advCoefs", advCoefs);
   initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
 
-  const int npack = ekat::PackInfo<Data::packn>::num_packs(nVertLevels);
+  const int npack = ekat::PackInfo<packn>::num_packs(nVertLevels);
   highOrderFlx = Apr2("highOrderFlx", nEdges, npack);
 }
 
@@ -173,7 +173,7 @@ void Data::init (
 
 Data::Ptr g_data;
 
-void cpp_impl1_init (
+void cpp_impl_init (
   const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
   const Int nAdv, const Int* nAdvCellsForEdge, const Int* minLevelCell,
   const Int* maxLevelCell, const Int* advCellsForEdge, const Real* tracerCur,
@@ -187,22 +187,19 @@ void cpp_impl1_init (
                advCoefs, advCoefs3rd, coef3rdOrder);
 }
 
-static void run(const Data& d);
-
-void cpp_impl1_run () {
-  assert(g_data);
-  run(*g_data);
-}
-
-void cpp_impl1_get_results (const Int nEdges, const Int nVertLevels,
-                            Real* highOrderFlx) {
+void cpp_impl_get_results (const Int nEdges, const Int nVertLevels,
+                           Real* highOrderFlx) {
   
 }
 
-void cpp_impl1_cleanup () { g_data = nullptr; }
+void cpp_impl_cleanup () { g_data = nullptr; }
 
 //sec C++/Kokkos/EKAT demo implementation 1.
 
-void run (const Data& d) {
+void run_impl1 (const Data& d) {
   
+}
+void cpp_impl1_run () {
+  assert(g_data);
+  run_impl1(*g_data);
 }

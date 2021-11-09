@@ -453,7 +453,7 @@ program nested
    call kokkos_init()
 
    call timerStart(timerData)
-   call cpp_impl1_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
+   call cpp_impl_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
         nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
         tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask, &
         advCoefs, advCoefs3rd, coef3rdOrder)
@@ -466,8 +466,8 @@ program nested
    call timerPrint(timer_cpp_impl1)
 
    call timerStart(timerData)
-   call cpp_impl1_get_results(nEdges, nVertLevels, highOrderFlx)
-   call cpp_impl1_cleanup()
+   call cpp_impl_get_results(nEdges, nVertLevels, highOrderFlx)
+   call cpp_impl_cleanup()
    call timerStop(timerData)
    first = .true.
    do iEdge=1,nEdges

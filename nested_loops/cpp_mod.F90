@@ -9,7 +9,7 @@ module cpp_mod
      subroutine kokkos_finalize() bind(c)
      end subroutine kokkos_finalize
 
-     subroutine cpp_impl1_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
+     subroutine cpp_impl_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
           nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
           tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask, &
           advCoefs, advCoefs3rd, coef3rdOrder) bind(c)
@@ -27,21 +27,21 @@ module cpp_mod
             normalThicknessFlux, advMaskHighOrder
        real(c_double), dimension(nAdv,nEdges), intent(in) :: &
             advCoefs, advCoefs3rd
-     end subroutine cpp_impl1_init
+     end subroutine cpp_impl_init
 
      subroutine cpp_impl1_run() bind(c)
      end subroutine cpp_impl1_run
 
-     subroutine cpp_impl1_get_results(nEdges, nVertLevels, highOrderFlx) bind(c)
+     subroutine cpp_impl_get_results(nEdges, nVertLevels, highOrderFlx) bind(c)
        use iso_c_binding, only: c_int, c_double
        integer(c_int), value, intent(in) :: &
             nEdges, nVertLevels
        real(c_double), dimension(nVertLevels,nEdges), intent(out) :: &
             highOrderFlx
-     end subroutine cpp_impl1_get_results
+     end subroutine cpp_impl_get_results
 
-     subroutine cpp_impl1_cleanup() bind(c)
-     end subroutine cpp_impl1_cleanup
+     subroutine cpp_impl_cleanup() bind(c)
+     end subroutine cpp_impl_cleanup
 
   end interface
 
