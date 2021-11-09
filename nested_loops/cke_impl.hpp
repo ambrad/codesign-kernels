@@ -44,7 +44,8 @@ struct Data {
   Real coef3rdOrder;
   Aci1 nAdvCellsForEdge, minLevelCell, maxLevelCell;
   Aci2 advCellsForEdge;
-  Acpr2 tracerCur, cellMask, normalThicknessFlux, advMaskHighOrder, advCoefs, advCoefs3rd;
+  Acr2 advCoefs, advCoefs3rd;
+  Acpr2 tracerCur, cellMask, normalThicknessFlux, advMaskHighOrder;
 
   // Output.
   Apr2 highOrderFlx;

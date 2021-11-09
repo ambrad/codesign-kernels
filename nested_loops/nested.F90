@@ -81,8 +81,6 @@ program nested
       timerGPU,    &! timer for a GPU-optimized form
       timer_cke1
 
-   logical :: first
-
    ! End preamble
    !-------------
    ! Begin code
@@ -469,16 +467,17 @@ program nested
    call cke_get_results(nEdges, nVertLevels, highOrderFlx)
    call cke_cleanup()
    call timerStop(timerData)
-   first = .true.
+
+   iCell = 0;
    do iEdge=1,nEdges
    do k=1,nVertLevels
       refVal = refFlx(k,iEdge)
       relErr = abs(highOrderFlx(k,iEdge) - refVal)
       if (refVal /= 0.0_RKIND) relErr = relErr/abs(refVal)
-      if (relErr > errTol .and. first) then
+      if (relErr > errTol .and. iCell < 10) then
          print *,'Error computing highOrderFlx, C++/Kokkos impl1: ', &
                   k,iEdge,highOrderFlx(k,iEdge),refVal
-         first = .false.
+         iCell = iCell + 1
       endif
       highOrderFlx(k,iEdge) = 0.0_RKIND
    end do

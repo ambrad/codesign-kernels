@@ -69,8 +69,8 @@ gnucke:
 	make nestedcke \
 	"FC=mpif90" \
 	"CXX=mpicxx" \
-	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE" \
-	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic ${CKE_FLAGS}" \
+	"FFLAGS=-g -O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE" \
+	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS}"
 
 llvm:

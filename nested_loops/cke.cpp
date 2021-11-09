@@ -75,14 +75,14 @@ void Data::init (
   initv(minLevelCell_, nCells, "minLevelCell", minLevelCell, -1);
   initv(maxLevelCell_, nCells, "maxLevelCell", maxLevelCell, -1);
   initv(advCellsForEdge_, nEdges, nAdv, "advCellsForEdge", advCellsForEdge, -1);
+  initv(advCoefs_, nEdges, nAdv, "advCoefs", advCoefs);
+  initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
   initvpk(tracerCur_, nCells, nVertLevels, packn, "tracerCur", tracerCur);
   initvpk(cellMask_, nCells, nVertLevels, packn, "cellMask", cellMask);
   initvpk(normalThicknessFlux_, nEdges, nVertLevels, packn,
           "normalThicknessFlux", normalThicknessFlux);
   initvpk(advMaskHighOrder_, nEdges, nVertLevels, packn,
           "advMaskHighOrder", advMaskHighOrder);
-  initv(advCoefs_, nEdges, nAdv, "advCoefs", advCoefs);
-  initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
 
   const int npack = ekat::PackInfo<packn>::num_packs(nVertLevels);
   highOrderFlx = Apr2("highOrderFlx", nEdges, npack); // 0-inited
@@ -112,7 +112,6 @@ void cke_get_results (const Int nEdges, const Int nVertLevels,
                       Real* highOrderFlx) {
   const auto d = cke::g_data;
   assert(d);
-
   const auto shof = scalarize(d->highOrderFlx);
   const auto h = Kokkos::create_mirror_view(shof);
   Kokkos::deep_copy(h, shof);
@@ -120,9 +119,6 @@ void cke_get_results (const Int nEdges, const Int nVertLevels,
   for (int i = 0; i < d->nEdges; ++i)
     for (int j = 0; j < nvl; ++j)
       highOrderFlx[nvl*i+j] = h(i,j);
-
-  // The mini-app asks us to 0-init highOrderFlx after a run.
-  Kokkos::deep_copy(d->highOrderFlx, 0);
 }
 
 void cke_cleanup () { cke::g_data = nullptr; }
