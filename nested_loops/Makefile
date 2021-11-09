@@ -2,7 +2,11 @@ FC =
 FFLAGS =
 LDFLAGS =
 
-# if using C++/Kokkos, set the EKAT installation root dir
+# if using C++/Kokkos, set
+# * the EKAT installation root dir
+# * CPP_IMPL1_PACK_SIZE
+EKAT = # no default
+CPP_IMPL1_PACK_SIZE = 4
 include make.inc
 
 dummy:
@@ -63,9 +67,9 @@ gnucpp:
 	"CXX=mpicxx" \
 	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CPP_KOKKOS" \
 	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic \
-		-DUSE_CPP_KOKKOS -DCPP_IMPL1_PACK_SIZE=8 \
+		-DUSE_CPP_KOKKOS -DCPP_IMPL1_PACK_SIZE=${CPP_IMPL1_PACK_SIZE} \
 		-I${EKAT}/include -I${EKAT}/include/kokkos" \
-	"LDFLAGS=-O3 -m64 -fopenmp -lstdc++ -lmpi_cxx -L${EKAT}/lib -lkokkoscore"
+	"LDFLAGS=-O3 -m64 -fopenmp -lstdc++ -lmpi_cxx -L${EKAT}/lib -lkokkoscore -ldl"
 
 llvm:
 	make nested \

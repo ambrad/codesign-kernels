@@ -450,6 +450,8 @@ program nested
    ! C++/Kokkos form
    !--------------------------------------------------------------------
 #ifdef USE_CPP_KOKKOS
+   call kokkos_init()
+
    call timerStart(timerData)
    call cpp_impl1_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
         nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
@@ -465,6 +467,7 @@ program nested
 
    call timerStart(timerData)
    call cpp_impl1_get_results(nEdges, nVertLevels, highOrderFlx)
+   call cpp_impl1_cleanup()
    call timerStop(timerData)
    first = .true.
    do iEdge=1,nEdges
@@ -480,6 +483,8 @@ program nested
       highOrderFlx(k,iEdge) = 0.0_RKIND
    end do
    end do
+
+   call kokkos_finalize()
 #endif
 
    !--------------------------------------------------------------------

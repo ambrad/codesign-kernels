@@ -3,6 +3,12 @@ module cpp_mod
 
   interface
 
+     subroutine kokkos_init() bind(c)
+     end subroutine kokkos_init
+
+     subroutine kokkos_finalize() bind(c)
+     end subroutine kokkos_finalize
+
      subroutine cpp_impl1_init(nIters, nEdges, nCells, nVertLevels, nAdv, &
           nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge, &
           tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask, &
@@ -33,6 +39,9 @@ module cpp_mod
        real(c_double), dimension(nVertLevels,nEdges), intent(out) :: &
             highOrderFlx
      end subroutine cpp_impl1_get_results
+
+     subroutine cpp_impl1_cleanup() bind(c)
+     end subroutine cpp_impl1_cleanup
 
   end interface
 
