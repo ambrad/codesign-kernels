@@ -83,7 +83,7 @@ void Data::init (
   initvpk(advMaskHighOrder_, nEdges, nVertLevels, "advMaskHighOrder", advMaskHighOrder);
 
   const int npack = ekat::PackInfo<packn>::num_packs(nVertLevels);
-  highOrderFlx = Apr2("highOrderFlx", nEdges, npack); // 0-inited
+  highOrderFlx = Apr2("highOrderFlx", nEdges, npack);
 }
 
 static Data::Ptr g_data;

@@ -102,5 +102,8 @@ cke_mod.o: cke_mod.F90
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+cke.o: cke.hpp cke_impl.hpp
+cke_impl1.o: cke.hpp cke_impl.hpp
+
 clean:
 	/bin/rm -f nested *.o *optrpt *.s *.mod *.MOD

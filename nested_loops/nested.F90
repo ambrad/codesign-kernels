@@ -474,7 +474,7 @@ program nested
       refVal = refFlx(k,iEdge)
       relErr = abs(highOrderFlx(k,iEdge) - refVal)
       if (refVal /= 0.0_RKIND) relErr = relErr/abs(refVal)
-      if (relErr > errTol .and. iCell < 10) then
+      if ((isnan(relErr) .or. relErr > errTol) .and. iCell < 10) then
          print *,'Error computing highOrderFlx, C++/Kokkos impl1: ', &
                   k,iEdge,highOrderFlx(k,iEdge),refVal
          iCell = iCell + 1

@@ -23,21 +23,24 @@ struct Data {
 
   typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
 
+  template <typename Data>
+  using View = Kokkos::View<Data,Layout,Kokkos::MemoryTraits<Kokkos::Restrict>>;
+
   // Some handy view aliases.
-  typedef Kokkos::View<Int*,Layout> Ai1;
-  typedef Kokkos::View<const Int*,Layout> Aci1;
-  typedef Kokkos::View<Int**,Layout> Ai2;
-  typedef Kokkos::View<const Int**,Layout> Aci2;
+  typedef View<Int*> Ai1;
+  typedef View<const Int*> Aci1;
+  typedef View<Int**> Ai2;
+  typedef View<const Int**> Aci2;
 
-  typedef Kokkos::View<Real*,Layout> Ar1;
-  typedef Kokkos::View<const Real*,Layout> Acr1;
-  typedef Kokkos::View<Real**,Layout> Ar2;
-  typedef Kokkos::View<const Real**,Layout> Acr2;
+  typedef View<Real*> Ar1;
+  typedef View<const Real*> Acr1;
+  typedef View<Real**> Ar2;
+  typedef View<const Real**> Acr2;
 
-  typedef Kokkos::View<Pr*,Layout> Apr1;
-  typedef Kokkos::View<const Pr*,Layout> Acpr1;
-  typedef Kokkos::View<Pr**,Layout> Apr2;
-  typedef Kokkos::View<const Pr**,Layout> Acpr2;
+  typedef View<Pr*> Apr1;
+  typedef View<const Pr*> Acpr1;
+  typedef View<Pr**> Apr2;
+  typedef View<const Pr**> Acpr2;
 
   // Read-only data from F90.
   Int nIters, nEdges, nCells, nVertLevels, nAdv;
