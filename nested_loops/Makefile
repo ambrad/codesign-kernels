@@ -2,6 +2,9 @@ FC =
 FFLAGS =
 LDFLAGS =
 
+# if using C++/Kokkos, set the EKAT installation root dir
+include make.inc
+
 dummy:
 	@echo "ERROR: Unknown target"
 
@@ -58,9 +61,11 @@ gnucpp:
 	make nestedcpp \
 	"FC=mpif90" \
 	"CXX=mpicxx" \
-	"FFLAGS=-O3 -m64 -Wall -pedantic -DUSE_CPP_KOKKOS" \
-	"CXXFLAGS=-std=c++14 -O3 -m64 -Wall -pedantic -DUSE_CPP_KOKKOS" \
-	"LDFLAGS=-O3 -m64 -lstdc++"
+	"FFLAGS=-O3 -m64 -fopenmp -Wall -pedantic -DUSE_CPP_KOKKOS" \
+	"CXXFLAGS=-std=c++14 -O3 -m64 -fopenmp -Wall -pedantic \
+		-DUSE_CPP_KOKKOS -DCPP_IMPL1_PACK_SIZE=8 \
+		-I${EKAT}/include -I${EKAT}/include/kokkos" \
+	"LDFLAGS=-O3 -m64 -fopenmp -lstdc++ -lmpi_cxx -L${EKAT}/lib -lkokkoscore"
 
 llvm:
 	make nested \
@@ -74,7 +79,7 @@ nested: nested.o timerMod.o
 
 nestedcpp: nested.o timerMod.o cpp_mod.o cpp_impl1.o
 	@echo "Linking"
-	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o cpp_mod.o cpp_impl1.o
+	$(FC) -o nested nested.o timerMod.o cpp_mod.o cpp_impl1.o $(LDFLAGS)
 
 nested.o: nested.F90 timerMod.o cpp_mod.o
 	@echo "Building nested source"
