@@ -17,7 +17,7 @@ extern "C" {
   void cke_get_results(const Int nEdges, const Int nVertLevels, Real* highOrderFlx);
   void cke_cleanup();
 
-  void cke1_run();
+  void cke_impl1_run();
 }
 
 #endif

@@ -461,7 +461,7 @@ program nested
 
    timer_cke1 = timerCreate('C++/Kokkos')
    call timerStart(timer_cke1)
-   call cke1_run()
+   call cke_impl1_run()
    call timerStop(timer_cke1)
    call timerPrint(timer_cke1)
 

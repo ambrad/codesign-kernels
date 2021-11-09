@@ -1,22 +1,5 @@
-/* This file implements one or more approaches to using C++/Kokkos/EKAT to
-   implemented the nested loop kernel.
-
-   See comments beginning with "//sec" to see each section of code: data
-   structures, test administrative details, and the actual demo.
- */
-
 #include "cke.hpp"
-
-#include <memory>
-
-#include "Kokkos_Core.hpp"
-
-#include "ekat/ekat_session.hpp"
-#include "ekat/ekat_pack.hpp"
-#include "ekat/ekat_pack_utils.hpp"
-#include "ekat/ekat_pack_kokkos.hpp"
-
-//sec Kokkos init/finalize
+#include "cke_impl.hpp"
 
 static bool in_charge_of_kokkos = false;
 
@@ -30,51 +13,7 @@ void kokkos_finalize () {
     Kokkos::finalize();
 }
 
-//sec Data structures
-
-struct Data {
-  typedef std::shared_ptr<Data> Ptr; // convenience: Data::Ptr
-
-  enum : int { packn = CKE_PACK_SIZE }; // pack size
-  typedef ekat::Pack<Real,packn> Pr; // shorthand for a pack of reals
-
-  typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
-
-  // Some handy view aliases.
-  typedef Kokkos::View<Int*,Layout> Ai1;
-  typedef Kokkos::View<const Int*,Layout> Aci1;
-  typedef Kokkos::View<Int**,Layout> Ai2;
-  typedef Kokkos::View<const Int**,Layout> Aci2;
-
-  typedef Kokkos::View<Real*,Layout> Ar1;
-  typedef Kokkos::View<const Real*,Layout> Acr1;
-  typedef Kokkos::View<Real**,Layout> Ar2;
-  typedef Kokkos::View<const Real**,Layout> Acr2;
-
-  typedef Kokkos::View<Pr*,Layout> Apr1;
-  typedef Kokkos::View<const Pr*,Layout> Acpr1;
-  typedef Kokkos::View<Pr**,Layout> Apr2;
-  typedef Kokkos::View<const Pr**,Layout> Acpr2;
-
-  // Read-only data from F90.
-  Int nIters, nEdges, nCells, nVertLevels, nAdv;
-  Real coef3rdOrder;
-  Aci1 nAdvCellsForEdge, minLevelCell, maxLevelCell;
-  Aci2 advCellsForEdge;
-  Acpr2 tracerCur, cellMask, normalThicknessFlux, advMaskHighOrder, advCoefs, advCoefs3rd;
-
-  // Output.
-  Apr2 highOrderFlx;
-
-  void init(
-    const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
-    const Int nAdv, const Int* nAdvCellsForEdge, const Int* minLevelCell,
-    const Int* maxLevelCell, const Int* advCellsForEdge, const Real* tracerCur,
-    const Real* normalThicknessFlux, const Real* advMaskHighOrder, const Real* cellMask,
-    const Real* advCoefs, const Real* advCoefs3rd, const Real coef3rdOrder);  
-};
-
-//sec Administrative details
+namespace cke {
 
 // Initialize a View<const Pack<Real,packn>**> from raw(1:d1,1:d2), where dim 2
 // has the fast index.
@@ -149,9 +88,11 @@ void Data::init (
   highOrderFlx = Apr2("highOrderFlx", nEdges, npack);
 }
 
-//sec API
+static Data::Ptr g_data;
 
-Data::Ptr g_data;
+Data::Ptr get_Data_singleton () { return g_data; }
+
+} // namespace cke
 
 void cke_init (
   const Int nIters, const Int nEdges, const Int nCells, const Int nVertLevels,
@@ -160,27 +101,16 @@ void cke_init (
   const Real* normalThicknessFlux, const Real* advMaskHighOrder, const Real* cellMask,
   const Real* advCoefs, const Real* advCoefs3rd, const Real coef3rdOrder)
 {
-  g_data = std::make_shared<Data>();
-  g_data->init(nIters, nEdges, nCells, nVertLevels, nAdv,
-               nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge,
-               tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask,
-               advCoefs, advCoefs3rd, coef3rdOrder);
+  cke::g_data = std::make_shared<cke::Data>();
+  cke::g_data->init(nIters, nEdges, nCells, nVertLevels, nAdv,
+                    nAdvCellsForEdge, minLevelCell, maxLevelCell, advCellsForEdge,
+                    tracerCur, normalThicknessFlux, advMaskHighOrder, cellMask,
+                    advCoefs, advCoefs3rd, coef3rdOrder);
 }
 
 void cke_get_results (const Int nEdges, const Int nVertLevels,
-                           Real* highOrderFlx) {
+                      Real* highOrderFlx) {
   
 }
 
-void cke_cleanup () { g_data = nullptr; }
-
-//sec C++/Kokkos/EKAT demo implementation 1.
-
-void run_impl1 (const Data& d) {
-  
-}
-
-void cke1_run () {
-  assert(g_data);
-  run_impl1(*g_data);
-}
+void cke_cleanup () { cke::g_data = nullptr; }

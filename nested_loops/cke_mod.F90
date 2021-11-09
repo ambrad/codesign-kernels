@@ -29,8 +29,8 @@ module cke_mod
             advCoefs, advCoefs3rd
      end subroutine cke_init
 
-     subroutine cke1_run() bind(c)
-     end subroutine cke1_run
+     subroutine cke_impl1_run() bind(c)
+     end subroutine cke_impl1_run
 
      subroutine cke_get_results(nEdges, nVertLevels, highOrderFlx) bind(c)
        use iso_c_binding, only: c_int, c_double

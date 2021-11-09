@@ -11,6 +11,7 @@ include make.inc
 CKE_FLAGS = -DUSE_CKE -DCKE_PACK_SIZE=${CKE_PACK_SIZE} \
 	-I${EKAT}/include -I${EKAT}/include/kokkos
 CKE_LIBS = -lstdc++ -lmpi_cxx -L${EKAT}/lib -lekat -lkokkoscore -ldl
+CKE_OBJECTS = cke_mod.o cke.o cke_impl1.o
 
 dummy:
 	@echo "ERROR: Unknown target"
@@ -82,9 +83,9 @@ nested: nested.o timerMod.o
 	@echo "Linking"
 	$(FC) $(LDFLAGS) -o nested nested.o timerMod.o
 
-nestedcke: nested.o timerMod.o cke_mod.o cke.o
+nestedcke: nested.o timerMod.o $(CKE_OBJECTS)
 	@echo "Linking"
-	$(FC) -o nested nested.o timerMod.o cke_mod.o cke.o $(LDFLAGS)
+	$(FC) -o nested nested.o timerMod.o $(CKE_OBJECTS) $(LDFLAGS)
 
 nested.o: nested.F90 timerMod.o cke_mod.o
 	@echo "Building nested source"
@@ -98,9 +99,8 @@ cke_mod.o: cke_mod.F90
 	@echo "Building cke module"
 	$(FC) -c $(FFLAGS) cke_mod.F90
 
-cke.o: cke.cpp
-	@echo "Building cke impl"
-	$(CXX) -c $(CXXFLAGS) cke.cpp
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	/bin/rm -f nested *.o *optrpt *.s *.mod *.MOD
