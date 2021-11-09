@@ -17,11 +17,11 @@ namespace cke {
 
 // Initialize a View<const Pack<Real,packn>**> from raw(1:d1,1:d2), where dim 2
 // has the fast index.
-template <typename Scalar, typename V> static
-void initvpk (const Scalar* raw, const int d1, const int d2, const int packn,
-              const std::string& name, V& v) {
+template <typename Scalar, typename V> static void
+initvpk (const Scalar* raw, const int d1, const int d2, const std::string& name, V& v,
+         typename std::enable_if<V::value_type::packtag>::type* = 0) {
   // Get the number of packs that cover the scalar length.
-  const int d2pk = ekat::PackInfo<Data::packn>::num_packs(d2);
+  const int d2pk = ekat::PackInfo<V::value_type::n>::num_packs(d2);
   // Allocate the view as writeable.
   const auto vnc = typename V::non_const_type(name, d1, d2pk);
   // For convenience, take a scalar view of the original Pack<Scalar> view.
@@ -77,12 +77,10 @@ void Data::init (
   initv(advCellsForEdge_, nEdges, nAdv, "advCellsForEdge", advCellsForEdge, -1);
   initv(advCoefs_, nEdges, nAdv, "advCoefs", advCoefs);
   initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
-  initvpk(tracerCur_, nCells, nVertLevels, packn, "tracerCur", tracerCur);
-  initvpk(cellMask_, nCells, nVertLevels, packn, "cellMask", cellMask);
-  initvpk(normalThicknessFlux_, nEdges, nVertLevels, packn,
-          "normalThicknessFlux", normalThicknessFlux);
-  initvpk(advMaskHighOrder_, nEdges, nVertLevels, packn,
-          "advMaskHighOrder", advMaskHighOrder);
+  initvpk(tracerCur_, nCells, nVertLevels, "tracerCur", tracerCur);
+  initvpk(cellMask_, nCells, nVertLevels, "cellMask", cellMask);
+  initvpk(normalThicknessFlux_, nEdges, nVertLevels, "normalThicknessFlux", normalThicknessFlux);
+  initvpk(advMaskHighOrder_, nEdges, nVertLevels, "advMaskHighOrder", advMaskHighOrder);
 
   const int npack = ekat::PackInfo<packn>::num_packs(nVertLevels);
   highOrderFlx = Apr2("highOrderFlx", nEdges, npack); // 0-inited
