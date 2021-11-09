@@ -85,7 +85,7 @@ void Data::init (
   initv(advCoefs3rd_, nEdges, nAdv, "advCoefs3rd", advCoefs3rd);
 
   const int npack = ekat::PackInfo<packn>::num_packs(nVertLevels);
-  highOrderFlx = Apr2("highOrderFlx", nEdges, npack);
+  highOrderFlx = Apr2("highOrderFlx", nEdges, npack); // 0-inited
 }
 
 static Data::Ptr g_data;
@@ -110,7 +110,19 @@ void cke_init (
 
 void cke_get_results (const Int nEdges, const Int nVertLevels,
                       Real* highOrderFlx) {
-  
+  const auto d = cke::g_data;
+  assert(d);
+
+  const auto shof = scalarize(d->highOrderFlx);
+  const auto h = Kokkos::create_mirror_view(shof);
+  Kokkos::deep_copy(h, shof);
+  const auto nvl = d->nVertLevels;
+  for (int i = 0; i < d->nEdges; ++i)
+    for (int j = 0; j < nvl; ++j)
+      highOrderFlx[nvl*i+j] = h(i,j);
+
+  // The mini-app asks us to 0-init highOrderFlx after a run.
+  Kokkos::deep_copy(d->highOrderFlx, 0);
 }
 
 void cke_cleanup () { cke::g_data = nullptr; }
