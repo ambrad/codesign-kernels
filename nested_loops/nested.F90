@@ -79,7 +79,7 @@ program nested
       timerData,   &! timer for data transfers to device
       timerOrig,   &! timer for original CPU-optimized form
       timerGPU,    &! timer for a GPU-optimized form
-      timer_cke1
+      timer_cke
 
    ! End preamble
    !-------------
@@ -457,30 +457,36 @@ program nested
         advCoefs, advCoefs3rd, coef3rdOrder)
    call timerStop(timerData)
 
-   timer_cke1 = timerCreate('C++/Kokkos')
-   call timerStart(timer_cke1)
-   call cke_impl1_run()
-   call timerStop(timer_cke1)
-   call timerPrint(timer_cke1)
+   do i = 1,1
+      timer_cke = timerCreate('C++/Kokkos ' // char(48+i))
+      call timerStart(timer_cke)
+      select case(i)
+      case (1)
+         call cke_impl1_run()
+      ! other impls go here
+      end select
+      call timerStop(timer_cke)
+      call timerPrint(timer_cke)
 
-   call timerStart(timerData)
-   call cke_get_results(nEdges, nVertLevels, highOrderFlx)
-   call cke_cleanup()
-   call timerStop(timerData)
+      call timerStart(timerData)
+      call cke_get_results(nEdges, nVertLevels, highOrderFlx)
+      call cke_cleanup()
+      call timerStop(timerData)
 
-   iCell = 0;
-   do iEdge=1,nEdges
-   do k=1,nVertLevels
-      refVal = refFlx(k,iEdge)
-      relErr = abs(highOrderFlx(k,iEdge) - refVal)
-      if (refVal /= 0.0_RKIND) relErr = relErr/abs(refVal)
-      if ((isnan(relErr) .or. relErr > errTol) .and. iCell < 10) then
-         print *,'Error computing highOrderFlx, C++/Kokkos impl1: ', &
-                  k,iEdge,highOrderFlx(k,iEdge),refVal
-         iCell = iCell + 1
-      endif
-      highOrderFlx(k,iEdge) = 0.0_RKIND
-   end do
+      iCell = 0;
+      do iEdge=1,nEdges
+         do k=1,nVertLevels
+            refVal = refFlx(k,iEdge)
+            relErr = abs(highOrderFlx(k,iEdge) - refVal)
+            if (refVal /= 0.0_RKIND) relErr = relErr/abs(refVal)
+            if ((isnan(relErr) .or. relErr > errTol) .and. iCell < 10) then
+               print *,'Error computing highOrderFlx, C++/Kokkos impl', &
+                    i,k,iEdge,highOrderFlx(k,iEdge),refVal
+               iCell = iCell + 1
+            endif
+            highOrderFlx(k,iEdge) = 0.0_RKIND
+         end do
+      end do
    end do
 
    call kokkos_finalize()

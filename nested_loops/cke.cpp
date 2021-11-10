@@ -5,7 +5,7 @@ static bool in_charge_of_kokkos = false;
 
 void kokkos_init () {
   in_charge_of_kokkos = ! Kokkos::is_initialized();
-  ekat::initialize_ekat_session();
+  ekat::initialize_ekat_session(false);
 }
 
 void kokkos_finalize () {
