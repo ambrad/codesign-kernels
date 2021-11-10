@@ -21,10 +21,11 @@ struct Data {
   enum : int { packn = CKE_PACK_SIZE }; // pack size
   typedef ekat::Pack<Real,packn> Pr; // shorthand for a pack of reals
 
+  typedef Kokkos::DefaultExecutionSpace ExeSpace;
   typedef Kokkos::LayoutRight Layout; // data layout; can switch to experiment
 
   template <typename Data>
-  using View = Kokkos::View<Data,Layout,Kokkos::MemoryTraits<Kokkos::Restrict>>;
+  using View = Kokkos::View<Data,Layout,ExeSpace,Kokkos::MemoryTraits<Kokkos::Restrict>>;
 
   // Some handy view aliases.
   typedef View<Int*> Ai1;
@@ -62,6 +63,24 @@ struct Data {
 };
 
 Data::Ptr get_Data_singleton();
+
+template <typename Fn, typename ExeSpace = Kokkos::DefaultExecutionSpace>
+void parfor_iEdge_kPack (const Data& d, const Fn& f) {
+  const auto nvlpk = ekat::PackInfo<Data::packn>::num_packs(d.nVertLevels);
+  if (ekat::OnGpu<ExeSpace>::value) {
+    const auto p = Kokkos::RangePolicy<ExeSpace>(0, d.nEdges*nvlpk);
+    const auto g = KOKKOS_LAMBDA(const int idx) {
+      const int iEdge = idx / nvlpk, k = idx % nvlpk;
+      f(iEdge, k);
+    };
+    Kokkos::parallel_for(p, g);
+  } else {
+#   pragma omp parallel for
+    for (int iEdge = 0; iEdge < d.nEdges; ++iEdge)
+      for (int k = 0; k < nvlpk; ++k)
+        f(iEdge, k);
+  }
+}
 
 } // namespace cke
 
