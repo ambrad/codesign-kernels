@@ -61,6 +61,10 @@ struct Data {
     const Real* normalThicknessFlux, const Real* advMaskHighOrder, const Real* cellMask,
     const Real* advCoefs, const Real* advCoefs3rd, const Real coef3rdOrder);  
 
+
+  Kokkos::RangePolicy<ExeSpace> get_rpolicy_iEdge () const {
+    return Kokkos::RangePolicy<Data::ExeSpace>(0, nEdges);
+  }
   Kokkos::RangePolicy<ExeSpace> get_rpolicy_iEdge_kPack () const {
     return Kokkos::RangePolicy<Data::ExeSpace>(0, nEdges*nvlpk);
   }
@@ -73,18 +77,18 @@ Data::Ptr get_Data_singleton();
 template <typename Functor, typename ExeSpace = Kokkos::DefaultExecutionSpace>
 void parfor_iEdge_kPack (const Data& d, const Functor& f) {
   const auto nvlpk = d.nvlpk;
-  const auto nEdges = d.nEdges;
   if (ekat::OnGpu<ExeSpace>::value) {
-    const auto g = KOKKOS_LAMBDA(const int idx) {
+    const auto g = KOKKOS_LAMBDA (const int idx) {
       const int iEdge = idx / nvlpk, k = idx % nvlpk;
       f(iEdge, k);
     };
     Kokkos::parallel_for(d.get_rpolicy_iEdge_kPack(), g);
   } else {
-#   pragma omp parallel for
-    for (int iEdge = 0; iEdge < nEdges; ++iEdge)
+    const auto g = KOKKOS_LAMBDA (const int iEdge) {
       for (int k = 0; k < nvlpk; ++k)
         f(iEdge, k);
+    };
+    Kokkos::parallel_for(d.get_rpolicy_iEdge(), g);
   }
 }
 
