@@ -12,11 +12,12 @@ GNU for CPU:
     ekatinstall=ekat-install # or some other path
     rm -rf CMake*
     cmake \
-        -D CMAKE_BUILD_TYPE:STRING=DEBUG                  \
+        -D CMAKE_BUILD_TYPE:STRING=RELEASE                \
         -D CMAKE_CXX_COMPILER:STRING=mpicxx               \
         -D CMAKE_Fortran_COMPILER:STRING=mpifort          \
         -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall         \
         -D EKAT_ENABLE_TESTS:BOOL=ON                      \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON              \
         -D EKAT_TEST_DOUBLE_PRECISION:BOOL=ON             \
         -D EKAT_TEST_SINGLE_PRECISION:BOOL=ON             \
         -D EKAT_TEST_MAX_THREADS:STRING=2                 \
@@ -25,6 +26,7 @@ GNU for CPU:
 1c. Build and install:
 
     make install
+    ctest # verify the build
 
 2. In codesign-kernels/nested_loops, make a make.inc file like this one:
 
