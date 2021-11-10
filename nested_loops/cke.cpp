@@ -70,6 +70,7 @@ void Data::init (
 {
   nIters = nIters_; nEdges = nEdges_; nCells = nCells_; nVertLevels = nVertLevels_;
   nAdv = nAdv_; coef3rdOrder = coef3rdOrder_;
+  nvlpk = ekat::PackInfo<Data::packn>::num_packs(nVertLevels);
 
   initv(nAdvCellsForEdge_, nEdges, "nAdvCellsForEdge", nAdvCellsForEdge);
   initv(minLevelCell_, nCells, "minLevelCell", minLevelCell, -1);

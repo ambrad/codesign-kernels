@@ -4,7 +4,11 @@ GNU for CPU:
 
 1. Clone, build, and install EKAT as follows:
 
-1a. Clone: git clone git@github.com:E3SM-Project/EKAT.git
+1a. Clone:
+    git clone git@github.com:E3SM-Project/EKAT.git
+    cd EKAT
+    git submodule update --init --recursive
+
 
 1b. Configure:
 
@@ -39,6 +43,24 @@ Then
 
 GNU for V100:
 
-1b.
+1b. EKAT config on Weaver:
 
-2. make gnu-gpu-cke
+    ekatsrc= # path to EKAT repo
+    ekatinstall=ekat-install
+    export OMPI_CXX=${ekatsrc}/extern/kokkos/bin/nvcc_wrapper
+    rm -rf CMakeFiles
+    rm -f  CMakeCache.txt
+    cmake \
+        -C ${ekatsrc}/cmake/machine-files/weaver.cmake  \
+        -D CMAKE_BUILD_TYPE:STRING=RELEASE              \
+        -D CMAKE_CXX_COMPILER:STRING=mpicxx             \
+        -D CMAKE_Fortran_COMPILER:STRING=mpifort        \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON            \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON            \
+        -D EKAT_ENABLE_TESTS:BOOL=ON                    \
+        -D EKAT_TEST_SINGLE_PRECISION:BOOL=ON           \
+        -D EKAT_TEST_DOUBLE_PRECISION:BOOL=ON           \
+        -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall       \
+        ${ekatsrc}
+
+2. make gnu-v100-cke

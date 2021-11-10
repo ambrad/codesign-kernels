@@ -44,7 +44,7 @@ struct Data {
   typedef View<const Pr**> Acpr2;
 
   // Read-only data from F90.
-  Int nIters, nEdges, nCells, nVertLevels, nAdv;
+  Int nIters, nEdges, nCells, nVertLevels, nAdv, nvlpk;
   Real coef3rdOrder;
   Aci1 nAdvCellsForEdge, minLevelCell, maxLevelCell;
   Aci2 advCellsForEdge;
@@ -60,24 +60,33 @@ struct Data {
     const Int* maxLevelCell, const Int* advCellsForEdge, const Real* tracerCur,
     const Real* normalThicknessFlux, const Real* advMaskHighOrder, const Real* cellMask,
     const Real* advCoefs, const Real* advCoefs3rd, const Real coef3rdOrder);  
+
+  Kokkos::RangePolicy<ExeSpace> get_rpolicy_iEdge_kPack () const {
+    return Kokkos::RangePolicy<Data::ExeSpace>(0, nEdges*nvlpk);
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  void idx_to_iEdge_kPack (const int idx, int& iEdge, int& k) const {
+    iEdge = idx / nvlpk;
+    k = idx % nvlpk;
+  }
 };
 
 Data::Ptr get_Data_singleton();
 
-template <typename Fn, typename ExeSpace = Kokkos::DefaultExecutionSpace>
-void parfor_iEdge_kPack (const Data& d, const Fn& f) {
-  const auto nvlpk = ekat::PackInfo<Data::packn>::num_packs(d.nVertLevels);
+template <typename Functor, typename ExeSpace = Kokkos::DefaultExecutionSpace>
+void parfor_iEdge_kPack (const Data& d, const Functor& f) {
   if (ekat::OnGpu<ExeSpace>::value) {
-    const auto p = Kokkos::RangePolicy<ExeSpace>(0, d.nEdges*nvlpk);
+    const auto p = Kokkos::RangePolicy<ExeSpace>(0, d.nEdges*d.nvlpk);
     const auto g = KOKKOS_LAMBDA(const int idx) {
-      const int iEdge = idx / nvlpk, k = idx % nvlpk;
+      const int iEdge = idx / d.nvlpk, k = idx % d.nvlpk;
       f(iEdge, k);
     };
     Kokkos::parallel_for(p, g);
   } else {
 #   pragma omp parallel for
     for (int iEdge = 0; iEdge < d.nEdges; ++iEdge)
-      for (int k = 0; k < nvlpk; ++k)
+      for (int k = 0; k < d.nvlpk; ++k)
         f(iEdge, k);
   }
 }

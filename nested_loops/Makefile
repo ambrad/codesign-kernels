@@ -10,7 +10,7 @@ CKE_PACK_SIZE = 4
 include make.inc
 CKE_FLAGS = -DUSE_CKE -DCKE_PACK_SIZE=${CKE_PACK_SIZE} \
 	-I${EKAT}/include -I${EKAT}/include/kokkos
-CKE_LIBS = -lstdc++ -lmpi_cxx -L${EKAT}/lib -lekat -lkokkoscore -ldl
+CKE_LIBS = -lstdc++ -L${EKAT}/lib -lekat -lkokkoscore -ldl
 CKE_OBJECTS = cke_mod.o cke.o cke_impl1.o
 
 dummy:
@@ -72,6 +72,15 @@ gnu-cpu-cke:
 	"FFLAGS=-g -O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE" \
 	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS}"
+
+gnu-v100-cke:
+	make nestedcke \
+	"FC=mpif90" \
+	"CXX=mpicxx" \
+	"FFLAGS=-g -O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE" \
+	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic \
+		-arch=sm_70 --expt-extended-lambda ${CKE_FLAGS}" \
+	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS} -lcudadevrt -lcudart_static -lrt"
 
 llvm:
 	make nested \
