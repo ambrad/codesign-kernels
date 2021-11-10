@@ -65,6 +65,12 @@ gnu:
 	"FFLAGS=-O3 -m64 -Wall -pedantic" \
 	"LDFLAGS=-O3 -m64"
 
+llvm:
+	make nested \
+	"FC=flang" \
+	"FFLAGS=-O3" \
+	"LDFLAGS=-O3"
+
 gnu-cpu-cke:
 	make nestedcke \
 	"FC=mpif90" \
@@ -81,12 +87,6 @@ gnu-v100-cke:
 	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic \
 		-arch=sm_70 --expt-extended-lambda ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS} -lcudadevrt -lcudart_static -lrt"
-
-llvm:
-	make nested \
-	"FC=flang" \
-	"FFLAGS=-O3" \
-	"LDFLAGS=-O3"
 
 nested: nested.o timerMod.o
 	@echo "Linking"
