@@ -63,4 +63,11 @@ GNU for V100:
         -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall       \
         ${ekatsrc}
 
-2. make gnu-v100-cke
+2.
+    $ cat make.inc
+    EKAT = # path to EKAT install directory
+    CKE_PACK_SIZE = 1
+
+Then
+
+    make gnu-v100-cke

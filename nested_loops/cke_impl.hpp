@@ -64,29 +64,26 @@ struct Data {
   Kokkos::RangePolicy<ExeSpace> get_rpolicy_iEdge_kPack () const {
     return Kokkos::RangePolicy<Data::ExeSpace>(0, nEdges*nvlpk);
   }
-
-  KOKKOS_INLINE_FUNCTION
-  void idx_to_iEdge_kPack (const int idx, int& iEdge, int& k) const {
-    iEdge = idx / nvlpk;
-    k = idx % nvlpk;
-  }
 };
 
 Data::Ptr get_Data_singleton();
 
+// Functor defines void operator()(int,int). Cuda doesn't support std::function,
+// so Functor must be a struct.
 template <typename Functor, typename ExeSpace = Kokkos::DefaultExecutionSpace>
 void parfor_iEdge_kPack (const Data& d, const Functor& f) {
+  const auto nvlpk = d.nvlpk;
+  const auto nEdges = d.nEdges;
   if (ekat::OnGpu<ExeSpace>::value) {
-    const auto p = Kokkos::RangePolicy<ExeSpace>(0, d.nEdges*d.nvlpk);
     const auto g = KOKKOS_LAMBDA(const int idx) {
-      const int iEdge = idx / d.nvlpk, k = idx % d.nvlpk;
+      const int iEdge = idx / nvlpk, k = idx % nvlpk;
       f(iEdge, k);
     };
-    Kokkos::parallel_for(p, g);
+    Kokkos::parallel_for(d.get_rpolicy_iEdge_kPack(), g);
   } else {
 #   pragma omp parallel for
-    for (int iEdge = 0; iEdge < d.nEdges; ++iEdge)
-      for (int k = 0; k < d.nvlpk; ++k)
+    for (int iEdge = 0; iEdge < nEdges; ++iEdge)
+      for (int k = 0; k < nvlpk; ++k)
         f(iEdge, k);
   }
 }

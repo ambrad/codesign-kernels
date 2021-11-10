@@ -1,5 +1,5 @@
 &nested_nml
-   nIters = 100
+   nIters = 10000
    nEdges = 25600
    nCells = 2800
    nVertLevels = 100
