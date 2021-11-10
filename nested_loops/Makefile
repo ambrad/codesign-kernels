@@ -65,7 +65,7 @@ gnu:
 	"FFLAGS=-O3 -m64 -Wall -pedantic" \
 	"LDFLAGS=-O3 -m64"
 
-gnucke:
+gnu-cpu-cke:
 	make nestedcke \
 	"FC=mpif90" \
 	"CXX=mpicxx" \
