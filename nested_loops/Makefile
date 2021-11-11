@@ -6,7 +6,7 @@ LDFLAGS =
 # * the EKAT installation root dir
 # * CKE_PACK_SIZE
 EKAT = # no default
-CKE_PACK_SIZE = 4
+CKE_PACK_SIZE = 4 # CPU default; want 1 on GPU for max performance, but 4 will work
 include make.inc
 CKE_FLAGS = -DUSE_CKE -DCKE_PACK_SIZE=${CKE_PACK_SIZE} \
 	-I${EKAT}/include -I${EKAT}/include/kokkos
