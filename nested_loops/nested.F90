@@ -11,7 +11,9 @@
 program nested
 
    use timerMod
+#ifndef NO_MPI
    use mpi
+#endif
 #ifdef USE_CKE
    use cke_mod
 #endif
@@ -85,7 +87,9 @@ program nested
    !-------------
    ! Begin code
 
+#ifndef NO_MPI
    call MPI_Init(ierr)
+#endif
 
    ! Read model size info from namelist input, overwriting defaults
    open (15, file='nested.nml')
@@ -519,7 +523,9 @@ program nested
               normalThicknessFlux, highOrderFlx, advMaskHighOrder, &
               advCoefs, advCoefs3rd, wgtTmp, sgnTmp)
 
+#ifndef NO_MPI
    call MPI_Finalize(ierr)
+#endif
 
 !***********************************************************************
 

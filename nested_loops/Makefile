@@ -79,7 +79,7 @@ gnu-cpu-cke:
 	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS}"
 
-gnu-v100-cke:
+gnu-weaver-cke:
 	make nestedcke \
 	"FC=mpif90" \
 	"CXX=mpicxx" \
@@ -87,6 +87,15 @@ gnu-v100-cke:
 	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic \
 		-arch=sm_70 --expt-extended-lambda ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS} -lcudadevrt -lcudart_static -lrt"
+
+gnu-summit-cke:
+	make nestedcke \
+	"FC=mpif90" \
+	"CXX=mpicxx" \
+	"FFLAGS=-g -O3 -m64 -fopenmp -Wall -pedantic -DUSE_CKE -DNO_MPI" \
+	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic \
+		-arch=sm_70 --expt-extended-lambda ${CKE_FLAGS}" \
+	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS} -L${CUDAPATH}/lib64 -lcuda -lcudart"
 
 nested: nested.o timerMod.o
 	@echo "Linking"

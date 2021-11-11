@@ -41,7 +41,7 @@ Then
 
     make gnu-cpu-cke
 
-GNU for V100:
+GNU for Weaver V100:
 
 1b. EKAT config on Weaver:
 
@@ -63,11 +63,42 @@ GNU for V100:
         -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall       \
         ${ekatsrc}
 
-2.
-    $ cat make.inc
+2. make.inc:
+
     EKAT = # path to EKAT install directory
     CKE_PACK_SIZE = 1
 
 Then
 
-    make gnu-v100-cke
+    make gnu-weaver-cke
+
+GNU for Summit V100:
+
+1b. Configure:
+
+    ekatsrc= #...
+    ekatinstall=ekat-install
+    export OMPI_CXX=${ekatsrc}/extern/kokkos/bin/nvcc_wrapper
+    rm -rf CMakeFiles
+    rm -f  CMakeCache.txt
+    cmake \
+        -C ${ekatsrc}/cmake/machine-files/weaver.cmake  \
+        -D CMAKE_BUILD_TYPE:STRING=RELEASE              \
+        -D CMAKE_CXX_COMPILER:STRING=mpicxx             \
+        -D CMAKE_Fortran_COMPILER:STRING=mpifort        \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON            \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON            \
+        -D EKAT_ENABLE_TESTS:BOOL=ON                    \
+        -D EKAT_TEST_SINGLE_PRECISION:BOOL=ON           \
+        -D EKAT_TEST_DOUBLE_PRECISION:BOOL=ON           \
+        -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall       \
+        ${ekatsrc}
+
+2. make.inc:
+
+    EKAT = # ...
+    CKE_PACK_SIZE = 1
+
+Then
+
+    make gnu-summit-cke
