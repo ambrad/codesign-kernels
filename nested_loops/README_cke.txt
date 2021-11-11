@@ -105,3 +105,32 @@ module load gcc/9.1.0 cuda/11.0.3 netcdf-fortran/4.4.5 spectrum-mpi/10.4.0.3-202
 Then
 
     make gnu-summit-cke
+
+Compy:
+
+1b. Configure:
+
+    ekatsrc= # ...
+    ekatinstall=install # or some other path
+    rm -rf CMake*
+    cmake \
+        -D Kokkos_ENABLE_OPENMP=On                        \
+        -D CMAKE_BUILD_TYPE:STRING=RELEASE                \
+        -D CMAKE_CXX_COMPILER:STRING=mpiicpc              \
+        -D CMAKE_Fortran_COMPILER:STRING=mpiifort         \
+        -D CMAKE_INSTALL_PREFIX:PATH=$ekatinstall         \
+        -D EKAT_ENABLE_TESTS:BOOL=ON                      \
+        -D EKAT_DISABLE_TPL_WARNINGS:BOOL=ON              \
+        -D EKAT_TEST_DOUBLE_PRECISION:BOOL=ON             \
+        -D EKAT_TEST_SINGLE_PRECISION:BOOL=ON             \
+        -D EKAT_TEST_MAX_THREADS:STRING=2                 \
+        $ekatsrc
+
+2. make.inc:
+
+    EKAT = # ...
+    CKE_PACK_SIZE = 8 # for AVX512
+
+Then
+
+    make gnu-cpu-cke

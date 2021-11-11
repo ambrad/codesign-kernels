@@ -229,8 +229,8 @@ program nested
    !--------------------------------------------------------------------
 
    timerData = timerCreate('Data transfer')
-#ifdef USE_CKE
-   ! we won't skip this when done: just for dev
+#ifdef USE_CKE_dont_skip
+   ! if above is just USE_CKE, then skip all but the C++ perf test
    print *,'skip F90 code'
 #else
    call timerStart(timerData)

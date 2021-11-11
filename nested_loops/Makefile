@@ -10,7 +10,7 @@ CKE_PACK_SIZE = 4 # CPU default; want 1 on GPU for max performance, but 4 will w
 include make.inc
 CKE_FLAGS = -DUSE_CKE -DCKE_PACK_SIZE=${CKE_PACK_SIZE} \
 	-I${EKAT}/include -I${EKAT}/include/kokkos
-CKE_LIBS = -lstdc++ -L${EKAT}/lib -lekat -lkokkoscore -ldl
+CKE_LIBS = -lstdc++ -L${EKAT}/lib -L${EKAT}/lib64 -lekat -lkokkoscore -ldl
 CKE_OBJECTS = cke_mod.o cke.o cke_impl1.o
 
 dummy:
@@ -96,6 +96,14 @@ gnu-summit-cke:
 	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -Wall -pedantic \
 		-arch=sm_70 --expt-extended-lambda ${CKE_FLAGS}" \
 	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS} -L${CUDAPATH}/lib64 -lcuda -lcudart"
+
+gnu-compy-cke:
+	make nestedcke \
+	"FC=mpiifort" \
+	"CXX=mpiicpc" \
+	"FFLAGS=-g -O3 -m64 -fopenmp -xcore-avx512 -DUSE_CKE -DNO_MPI" \
+	"CXXFLAGS=-std=c++14 -g -O3 -m64 -fopenmp -xcore-avx512 ${CKE_FLAGS}" \
+	"LDFLAGS=-O3 -m64 -fopenmp ${CKE_LIBS}"
 
 nested: nested.o timerMod.o
 	@echo "Linking"
