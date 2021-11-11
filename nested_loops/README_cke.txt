@@ -74,6 +74,9 @@ Then
 
 GNU for Summit V100:
 
+module purge
+module load gcc/9.1.0 cuda/11.0.3 netcdf-fortran/4.4.5 spectrum-mpi/10.4.0.3-20210112 cmake/3.18.4 openblas/0.3.5 nsight-compute/2021.2.1 python/3.7-anaconda3 nsight-systems/2021.3.1.54 netcdf-c/4.8.0
+
 1b. Configure:
 
     ekatsrc= #...
